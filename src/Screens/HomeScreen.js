@@ -25,8 +25,8 @@ export default class HomeScreen extends React.Component {
     super(props);
     this.state = {
       listArray: [],
-      fevListArray: [],
-      isFevSelected: false,
+      favListArray: [],
+      isFavSelected: false,
       offset: 0,
       initialLoading: false,
       loading: true,
@@ -36,11 +36,12 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ listArray: [], allListArray: [], isFevSelected: false });
+    this.setState({ listArray: [], allListArray: [], isFavSelected: false });
     this.setState({ initialLoading: true });
     this.getDataAPI();
   }
 
+  //API Call
   getDataAPI() {
     this.setState({ loading: true });
     fetch(
@@ -55,7 +56,7 @@ export default class HomeScreen extends React.Component {
         console.log(jsonResponse);
         let data = this.state.allListArray;
         jsonResponse.data.forEach((element) => {
-          //   let obj = { id: element.id, name: element.title, image: element.images.original.url, isFev: false };
+          //   let obj = { id: element.id, name: element.title, image: element.images.original.url, isFav: false };
           data.push(element);
         });
         this.setState({
@@ -70,31 +71,33 @@ export default class HomeScreen extends React.Component {
       });
   }
 
+  //Handling on list item and navigate to details screen
   handleListOnPress = (item) => {
     this.props.navigation.navigate("Details", { item: item });
   };
 
+  //Handling Favourite item
   setFavouriteItem = (item, index) => {
-    if (!item.isFev) {
+    if (!item.isFav) {
       let favCount = 0;
       this.state.listArray.forEach((element) => {
-        if (element.isFev) {
+        if (element.isFav) {
           favCount += 1;
         }
       });
       if (favCount == 5) {
-        Alert.alert("", "Maximum 5 items should be favourite.");
+        Alert.alert("", "You can select Maximum 5 items as favourite.");
         return;
       }
     }
 
     let newObj = item;
-    let isFev = item.isFev ? false : true;
-    console.log(isFev);
-    newObj.isFev = isFev;
+    let isFav = item.isFav ? false : true;
+    console.log(isFav);
+    newObj.isFav = isFav;
     this.state.listArray[index] = newObj;
     let newArray = this.state.listArray;
-    if (this.state.isFevSelected) {
+    if (this.state.isFavSelected) {
       this.setState({ listArray: newArray });
       this.handleSegmentPress("favourite");
     } else {
@@ -102,34 +105,35 @@ export default class HomeScreen extends React.Component {
     }
   };
 
+  //Handling Normal List & Favourite List
   handleSegmentPress = (item) => {
     this.setState({ searchValue: "" });
+    console.log(item + " clicked");
     if (item == "list") {
-      console.log("list clicked");
       this.setState({
         listArray: this.state.allListArray,
-        isFevSelected: false,
+        isFavSelected: false,
       });
     }
     if (item == "favourite") {
-      console.log("favourite clicked");
       let newArray = [];
       for (let index = 0; index < this.state.allListArray.length; index++) {
         const element = this.state.allListArray[index];
-        if (element.isFev) {
+        if (element.isFav) {
           newArray.push(element);
         }
       }
       this.setState({
         listArray: newArray,
-        isFevSelected: true,
+        isFavSelected: true,
         loading: false,
       });
     }
   };
 
+  //Handling Load More
   loadMoreItems = () => {
-    if (this.state.isFevSelected || this.state.isSearching) {
+    if (this.state.isFavSelected || this.state.isSearching) {
       return;
     }
     console.log("Load More...");
@@ -137,6 +141,7 @@ export default class HomeScreen extends React.Component {
     this.getDataAPI();
   };
 
+  //Handling Loader on load more
   listFooter = () => {
     return this.state.isSearching ? (
       <></>
@@ -153,6 +158,7 @@ export default class HomeScreen extends React.Component {
     );
   };
 
+  //Handling searched text value
   onChangeValue = async (value) => {
     this.setState({ searchValue: value });
 
@@ -162,7 +168,7 @@ export default class HomeScreen extends React.Component {
     if (value !== "") {
       this.setState({ listArray: filteredItems, isSearching: true });
     } else {
-      if (this.state.isFevSelected) {
+      if (this.state.isFavSelected) {
         this.setState({ isSearching: false });
         this.handleSegmentPress("favourite");
       } else {
@@ -174,6 +180,7 @@ export default class HomeScreen extends React.Component {
     }
   };
 
+  //Render
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -185,20 +192,20 @@ export default class HomeScreen extends React.Component {
             <Text
               style={[
                 styles.segmentTitle,
-                { fontSize: this.state.isFevSelected ? 15 : 18 },
+                { fontSize: this.state.isFavSelected ? 15 : 18 },
               ]}
             >
               List
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.fevListStyle, styles.centerAll]}
+            style={[styles.favListStyle, styles.centerAll]}
             onPress={() => this.handleSegmentPress("favourite")}
           >
             <Text
               style={[
                 styles.segmentTitle,
-                { fontSize: this.state.isFevSelected ? 18 : 15 },
+                { fontSize: this.state.isFavSelected ? 18 : 15 },
               ]}
             >
               Favourite
@@ -220,7 +227,7 @@ export default class HomeScreen extends React.Component {
           />
         </View>
         {this.state.initialLoading ? (
-          <View>
+          <View style={styles.initLoaderView}>
             <ActivityIndicator
               size={"large"}
               color="black"
@@ -228,7 +235,7 @@ export default class HomeScreen extends React.Component {
             />
             <Text style={{ marginTop: 10 }}>Loading data...</Text>
           </View>
-        ) : (
+        ) : this.state.listArray.length > 0 ? (
           <FlatList
             data={this.state.listArray}
             renderItem={({ item, index }) => (
@@ -246,12 +253,17 @@ export default class HomeScreen extends React.Component {
             onEndReached={this.loadMoreItems}
             ListFooterComponent={this.listFooter()}
           />
+        ) : (
+          <View style={styles.initLoaderView}>
+            <Text style={styles.noDataStyle}>No Data</Text>
+          </View>
         )}
       </SafeAreaView>
     );
   }
 }
 
+//Handling List Item design function
 function ListItemFunction({
   item,
   handleListOnPress,
@@ -264,54 +276,36 @@ function ListItemFunction({
       style={styles.listBackground}
       onPress={() => handleListOnPress(item)}
     >
-      <View style={styles.contentView}>
-        <View style={styles.firstSection}>
-          <Image
-            style={{ width: 60, height: 60 }}
-            source={{
-              uri: item.images.original.url,
-            }}
-          />
-
-          <Text style={styles.titleStyle} numberOfLines={5}>
-            {item.title}
+      <View style={styles.imageViewStyle}>
+        <Image
+          source={{ uri: item.images.original.url }}
+          style={styles.gifImage}
+        />
+      </View>
+      <View style={styles.detailsViewContainer}>
+        <View style={styles.detailsViewText}>
+          <Text style={styles.titleText}>{item.title}</Text>
+          <Text style={styles.otherText}>
+            {"Uploaded By: " + item.username}
           </Text>
+          <Text style={styles.otherText}>{"Rating: " + item.rating}</Text>
         </View>
 
-        <View
-          style={{
-            justifyContent: "flex-end",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <Text style={styles.sourceText} numberOfLines={5}>
-            {item.source}
-          </Text>
-          {item.isFev ? (
-            <TouchableOpacity
-              style={[
-                styles.listBackground,
-                {
-                  fontSize: state.isFevSelected ? 18 : 15,
-                },
-              ]}
+        <View style={styles.favIconStyle}>
+          {item.isFav ? (
+            <MaterialIcons
               onPress={() => setFavouriteItem(item, index)}
-            >
-              <MaterialIcons name="favorite" size={32} color="red" />
-            </TouchableOpacity>
+              name="favorite"
+              size={32}
+              color="red"
+            />
           ) : (
-            <TouchableOpacity
-              style={[
-                styles.listBackground,
-                {
-                  fontSize: state.isFevSelected ? 18 : 15,
-                },
-              ]}
+            <MaterialIcons
               onPress={() => setFavouriteItem(item, index)}
-            >
-              <MaterialIcons name="favorite-outline" size={32} color="black" />
-            </TouchableOpacity>
+              name="favorite-outline"
+              size={32}
+              color="black"
+            />
           )}
         </View>
       </View>
@@ -319,6 +313,7 @@ function ListItemFunction({
   );
 }
 
+//StyleSheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -338,7 +333,46 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOpacity: 1.0,
     elevation: 3,
-    padding: 10,
+    // padding: 10,
+    width: "95%",
+  },
+  favIconStyle: {
+    width: "12%",
+    height: "100%",
+    paddingTop: 18,
+    backgroundColor: Colors.white,
+    alignItems: "center",
+  },
+  detailsViewContainer: {
+    padding: 5,
+    width: "100%",
+    backgroundColor: Colors.white,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    elevation: 2,
+  },
+  detailsViewText: {
+    width: "88%",
+    height: "100%",
+    backgroundColor: Colors.white,
+    padding: 5,
+  },
+  imageViewStyle: {
+    height: 180,
+    width: "100%",
+  },
+  gifImage: {
+    height: "100%",
+    width: "100%",
+  },
+  titleText: {
+    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  otherText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
   segmentStyle: {
     flexDirection: "row",
@@ -350,7 +384,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.primary,
   },
-  fevListStyle: {
+  favListStyle: {
     flex: 1,
     backgroundColor: Colors.secondary,
   },
@@ -360,24 +394,6 @@ const styles = StyleSheet.create({
   },
   segmentTitle: {
     fontWeight: "bold",
-  },
-  contentView: {
-    flex: 1,
-    justifyContent: "space-around",
-  },
-  firstSection: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-  },
-  titleStyle: {
-    fontSize: 15,
-    fontWeight: "normal",
-    margin: 5,
-  },
-  sourceText: {
-    fontSize: 16,
-    marginBottom: 10,
-    flexWrap: "wrap",
   },
   initLoaderView: {
     flex: 1,
@@ -396,5 +412,11 @@ const styles = StyleSheet.create({
     color: "#000",
     width: "90%",
     borderRadius: 5,
+  },
+  noDataStyle: {
+    marginTop: -120,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    fontSize: 18,
   },
 });

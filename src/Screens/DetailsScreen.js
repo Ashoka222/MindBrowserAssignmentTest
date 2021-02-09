@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Alert,
-  FlatList,
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import Colors from "../Config/Colors";
@@ -16,8 +7,8 @@ import Colors from "../Config/Colors";
 export default function DetailsScreen({ route }) {
   const { item } = route.params;
 
+  //Handling Favourite item
   const setFavouriteItem = async () => {
-    // setFavouriteItem = () => {
     console.log("Fav pressed");
     item.isFav = item.isFav ? false : true;
   };
@@ -66,6 +57,7 @@ export default function DetailsScreen({ route }) {
   );
 }
 
+//StyleSheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
