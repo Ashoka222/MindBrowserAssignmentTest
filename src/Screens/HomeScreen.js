@@ -72,8 +72,9 @@ export default class HomeScreen extends React.Component {
   }
 
   //Handling on list item and navigate to details screen
-  handleListOnPress = (item) => {
-    this.props.navigation.navigate("Details", { item: item });
+  handleListOnPress = (item, index) => {
+    console.log(index);
+    this.props.navigation.navigate("Details", { item: item, index });
   };
 
   //Handling Favourite item
@@ -274,7 +275,7 @@ function ListItemFunction({
   return (
     <TouchableOpacity
       style={styles.listBackground}
-      onPress={() => handleListOnPress(item)}
+      onPress={() => handleListOnPress(item, index)}
     >
       <View style={styles.imageViewStyle}>
         <Image
@@ -344,12 +345,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   detailsViewContainer: {
-    padding: 5,
+    margin: 5,
     width: "100%",
     backgroundColor: Colors.white,
     flexDirection: "row",
     justifyContent: "space-between",
-    elevation: 2,
   },
   detailsViewText: {
     width: "88%",
@@ -364,6 +364,8 @@ const styles = StyleSheet.create({
   gifImage: {
     height: "100%",
     width: "100%",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   titleText: {
     marginBottom: 10,

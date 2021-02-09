@@ -5,11 +5,12 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Colors from "../Config/Colors";
 
 export default function DetailsScreen({ route }) {
-  const { item } = route.params;
+  const { item, index } = route.params;
 
   //Handling Favourite item
   const setFavouriteItem = async () => {
     console.log("Fav pressed");
+    console.log(index + " " + item.isFav);
     item.isFav = item.isFav ? false : true;
   };
 
@@ -77,6 +78,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     elevation: 2,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   detailsViewText: {
     width: "88%",
@@ -87,6 +90,7 @@ const styles = StyleSheet.create({
   gifImage: {
     height: "100%",
     width: "100%",
+    borderRadius: 10,
   },
   favIconStyle: {
     width: "12%",
